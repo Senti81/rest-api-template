@@ -15,19 +15,25 @@ npm run dev
 npm run start
 ```
 
-### ToDo:
+## ToDo:
 - create ```./.env```
 - set local MongoDB connection in .env:
 ```
 DB_HOST=mongodb://127.0.0.1:27017/test
 ```
 
-# Create a Heroku remote
+### Create a Heroku remote
 ```
 heroku apps:create <name>
 ```
 
-# Deploying code
+### Deploying code
 ```
 git push heroku master
+```
+
+### Misc
+```
+heroku logs -t
+heroku apps:info
 ```
