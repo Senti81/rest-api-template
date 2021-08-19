@@ -22,3 +22,12 @@ npm run start
 DB_HOST=mongodb://127.0.0.1:27017/test
 ```
 
+# Create a Heroku remote
+```
+heroku apps:create <name>
+```
+
+# Deploying code
+```
+git push heroku master
+```
