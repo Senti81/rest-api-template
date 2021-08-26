@@ -1,5 +1,7 @@
+require('dotenv').config()
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -17,10 +19,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Password is required'],
     trim: true
+  },
+  token: {
+    type: String
   }
 })
 
-// Self defined method on the user schema
+// Static method
 userSchema.statics.findByCredentials = async (email, password) => {
   const user = await User.findOne({ email })
   
@@ -33,9 +38,29 @@ userSchema.statics.findByCredentials = async (email, password) => {
   return user
 }
 
-// Pre hook middleware (hashing password)
-userSchema.pre('save', async function() {
-  this.password = await bcrypt.hash(this.password, 8)  
+userSchema.methods.toJSON = function () {
+  const object = this.toObject()
+
+  delete object.password
+  delete object.token
+  return object
+}
+
+userSchema.methods.generateAuthToken = async function () {
+  const user = this
+  const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET)
+  user.token = token
+  await user.save()
+  return token
+}
+
+userSchema.pre('save', async function(next) {
+  const user = this
+
+  if (user.isModified('password')) {
+      user.password = await bcrypt.hash(user.password, 8)
+  }
+  next()  
 })
 
 const User = mongoose.model('User', userSchema)
