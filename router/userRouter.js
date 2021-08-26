@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const User = require('../model/User')
 
-// GET all
+// Show all users
 router.get('/users', async (req, res) => {
   try {
     const users = await User.find()
@@ -25,8 +25,13 @@ router.get('/users/:id', async (req, res) => {
   }
 })
 
-// POST
+// Create new user
 router.post('/users', async (req, res) => {
+
+  // Check if email already exists
+  if (await User.findOne({ email: req.body.email })) {
+    return res.status(400).send({error: 'Email already in use'})
+  }
   const user = new User(req.body)
   try {
     await user.save()
@@ -36,7 +41,17 @@ router.post('/users', async (req, res) => {
   }
 })
 
-// PUT
+// Login user
+router.post('/users/login', async (req, res) => {
+  try {
+    const user = await User.findByCredentials(req.body.email, req.body.password)
+    res.send(user)
+  } catch (error) {
+    res.status(400).send(error)
+  }
+})
+
+// Change user
 router.put('/users/:id', async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.params.id, req.body, { 
@@ -52,7 +67,7 @@ router.put('/users/:id', async (req, res) => {
   }
 }) 
 
-// DELETE
+// delete user
 router.delete('/users/:id', async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id)
