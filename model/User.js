@@ -2,6 +2,7 @@ require('dotenv').config()
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const Task = require('./Task')
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -23,6 +24,14 @@ const userSchema = new mongoose.Schema({
   token: {
     type: String
   }
+}, {
+  timestamps: true
+})
+
+userSchema.virtual('tasks', {
+  ref: 'Task',
+  localField: '_id',
+  foreignField: 'owner'
 })
 
 // Static method
@@ -61,6 +70,13 @@ userSchema.pre('save', async function(next) {
       user.password = await bcrypt.hash(user.password, 8)
   }
   next()  
+})
+
+// Delete user tasks, when user ist removed
+userSchema.pre('remove', async function (next) {
+  const user = this
+  await Task.deleteMany({ owner: user._id })
+  next()
 })
 
 const User = mongoose.model('User', userSchema)
