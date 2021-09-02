@@ -23,6 +23,17 @@ router.get('/todos', async (req, res) => {
   }
 })
 
+router.get('/todos/:id', async (req, res) => {
+  try {
+    const todo = await Todo.findById(req.params.id)
+    if (!todo)
+      return res.status(404).send()
+    res.send(todo)
+  } catch (error) {
+    res.status(400).send(error)
+  }
+})
+
 router.put('/todos/:id', async (req, res) => {
   const _id =  req.params.id
   try {
