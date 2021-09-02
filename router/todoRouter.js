@@ -36,11 +36,16 @@ router.get('/todos/:id', async (req, res) => {
 
 router.put('/todos/:id', async (req, res) => {
   const _id =  req.params.id
+  const updates = Object.keys(req.body)
+
   try {
-    const todo = await Todo.findByIdAndUpdate(_id, { completed: req.body.completed })
+    const todo = await Todo.findById(_id)
     if (!todo)
       return res.status(404).send()
-    res.send()
+
+    updates.forEach(update => todo[update] = req.body[update])
+    await todo.save()
+    res.send(todo)
   } catch (error) {
     res.status(500).send(error) 
   }
